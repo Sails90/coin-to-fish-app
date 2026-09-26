@@ -18,22 +18,47 @@
             overflow-x: hidden;
             padding-bottom: 20px;
         }
-        header {
+        
+        /* BARRA SUPERIOR DE SALDO Y RETIRO */
+        .saldo-header {
+            width: 90%;
+            max-width: 400px;
+            background: linear-gradient(135deg, #1b263b, #415a77);
+            border: 2px solid #00b4d8;
+            border-radius: 15px;
+            padding: 12px 15px;
             margin: 15px 0 10px 0;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
         }
+        .saldo-info h3 { font-size: 14px; color: #a8dadc; }
+        .saldo-info p { font-size: 20px; font-weight: bold; color: #ffb703; }
+        .btn-retirar {
+            background: #e63946;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
         .nav-tabs {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 15px;
         }
         .tab-btn {
             background: #1b263b;
             color: #e0e1dd;
             border: 1px solid #415a77;
-            padding: 8px 16px;
+            padding: 8px 12px;
             border-radius: 20px;
             cursor: pointer;
+            font-size: 13px;
             font-weight: bold;
         }
         .tab-btn.active {
@@ -54,41 +79,38 @@
             border: none;
             color: #000;
             font-weight: bold;
-            font-size: 16px;
-            padding: 12px 24px;
+            font-size: 15px;
+            padding: 12px 20px;
             border-radius: 20px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(251, 133, 0, 0.4);
             margin-top: 15px;
             width: 100%;
         }
-        .btn-action:active { transform: scale(0.96); }
 
-        /* Estilos del Marketplace */
         .market-grid {
             display: flex;
             flex-direction: column;
             gap: 15px;
             width: 100%;
         }
-        .card-pez {
+        .card-item {
             background: #1b263b;
             border: 1px solid #415a77;
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        .pez-info h4 { margin-bottom: 5px; color: #ffb703; }
-        .pez-info p { font-size: 12px; color: #e0e1dd; }
+        .item-info h4 { font-size: 15px; color: #ffb703; }
+        .item-info p { font-size: 11px; color: #e0e1dd; margin-top: 2px; }
         .badge {
             display: inline-block;
             padding: 2px 6px;
             border-radius: 8px;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
-            margin-bottom: 5px;
         }
         .comun { background: #6c757d; color: #fff; }
         .raro { background: #0d6efd; color: #fff; }
@@ -98,13 +120,14 @@
         #notificacion {
             position: fixed;
             top: 10px;
-            background: rgba(0, 180, 216, 0.9);
+            background: rgba(0, 180, 216, 0.95);
             color: #000;
             padding: 10px 20px;
             border-radius: 20px;
             font-weight: bold;
             display: none;
             z-index: 100;
+            text-align: center;
         }
     </style>
 </head>
@@ -112,74 +135,101 @@
 
     <div id="notificacion"></div>
 
-    <header>
-        <h2>🌊 COIN TO FISH 🎣</h2>
-        <p style="font-size: 12px; color: #a8dadc;">ROI: 45 Días | 4 Comidas al Día</p>
-    </header>
+    <!-- BALANCE Y SALDO USDT ARRIBA DEL ESTANQUE -->
+    <div class="saldo-header">
+        <div class="saldo-info">
+            <h3>💰 Mi Saldo USDT</h3>
+            <p id="txt-saldo">0.0000 USDT</p>
+        </div>
+        <button class="btn-retirar" onclick="solicitarRetiro()">Retirar (Min 10$)</button>
+    </div>
 
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="verSeccion('estanque', this)">🐟 Estanque</button>
-        <button class="tab-btn" onclick="verSeccion('market', this)">🛒 Mercado</button>
+        <button class="tab-btn" onclick="verSeccion('market', this)">🛒 Mercado Peces</button>
+        <button class="tab-btn" onclick="verSeccion('canas', this)">🎣 Cañas</button>
     </div>
 
     <!-- SECCIÓN ESTANQUE -->
     <div id="estanque" class="section active">
-        <canvas id="gameCanvas" width="340" height="320"></canvas>
-        <button class="btn-action" onclick="alimentarPeces()">🍞 Alimentar Peces (4/Día)</button>
+        <canvas id="gameCanvas" width="340" height="300"></canvas>
+        <button class="btn-action" onclick="alimentarPeces()">🍞 Alimentar Peces (c/ 6 hrs)</button>
     </div>
 
-    <!-- SECCIÓN MARKETPLACE -->
+    <!-- SECCIÓN MERCADO DE PECES -->
     <div id="market" class="section">
         <div class="market-grid">
-            
-            <div class="card-pez">
-                <div style="font-size: 40px;">🐠</div>
-                <div class="pez-info">
+            <div class="card-item">
+                <div style="font-size: 35px;">🐠</div>
+                <div class="item-info">
                     <span class="badge comun">COMÚN</span>
                     <h4>Pez Pezqueñín</h4>
                     <p>Precio: <strong>10 USDT</strong></p>
-                    <p>Ganancia: <strong>0.083 USDT / Comida</strong></p>
-                    <p>Retorno total (45d): 15 USDT</p>
+                    <p>Retorno: 0.083 USDT / 6h</p>
                 </div>
-                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_comun', 10)">Comprar</button>
+                <button class="btn-action" style="width: auto; padding: 6px 10px;" onclick="comprarItem('comprar_pez', 'pez_comun', 10)">Comprar</button>
             </div>
 
-            <div class="card-pez">
-                <div style="font-size: 40px;">🐡</div>
-                <div class="pez-info">
+            <div class="card-item">
+                <div style="font-size: 35px;">🐡</div>
+                <div class="item-info">
                     <span class="badge raro">RARO</span>
                     <h4>Pez Globo Dorado</h4>
                     <p>Precio: <strong>50 USDT</strong></p>
-                    <p>Ganancia: <strong>0.416 USDT / Comida</strong></p>
-                    <p>Retorno total (45d): 75 USDT</p>
+                    <p>Retorno: 0.416 USDT / 6h</p>
                 </div>
-                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_raro', 50)">Comprar</button>
+                <button class="btn-action" style="width: auto; padding: 6px 10px;" onclick="comprarItem('comprar_pez', 'pez_raro', 50)">Comprar</button>
             </div>
 
-            <div class="card-pez">
-                <div style="font-size: 40px;">🐬</div>
-                <div class="pez-info">
+            <div class="card-item">
+                <div style="font-size: 35px;">🐬</div>
+                <div class="item-info">
                     <span class="badge epico">ÉPICO</span>
                     <h4>Delfín Neón</h4>
                     <p>Precio: <strong>200 USDT</strong></p>
-                    <p>Ganancia: <strong>1.666 USDT / Comida</strong></p>
-                    <p>Retorno total (45d): 300 USDT</p>
+                    <p>Retorno: 1.666 USDT / 6h</p>
                 </div>
-                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_epico', 200)">Comprar</button>
+                <button class="btn-action" style="width: auto; padding: 6px 10px;" onclick="comprarItem('comprar_pez', 'pez_epico', 200)">Comprar</button>
             </div>
 
-            <div class="card-pez">
-                <div style="font-size: 40px;">🦈</div>
-                <div class="pez-info">
+            <div class="card-item">
+                <div style="font-size: 35px;">🦈</div>
+                <div class="item-info">
                     <span class="badge legendario">LEGENDARIO</span>
                     <h4>Tiburón Megalodón</h4>
                     <p>Precio: <strong>500 USDT</strong></p>
-                    <p>Ganancia: <strong>4.166 USDT / Comida</strong></p>
-                    <p>Retorno total (45d): 750 USDT</p>
+                    <p>Retorno: 4.166 USDT / 6h</p>
                 </div>
-                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_legendario', 500)">Comprar</button>
+                <button class="btn-action" style="width: auto; padding: 6px 10px;" onclick="comprarItem('comprar_pez', 'pez_legendario', 500)">Comprar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN CAÑAS DE PESCAR -->
+    <div id="canas" class="section">
+        <div class="market-grid">
+            <div class="card-item">
+                <div style="font-size: 35px;">🎣</div>
+                <div class="item-info">
+                    <span class="badge comun">COMÚN</span>
+                    <h4>Caña Común</h4>
+                    <p>Precio: <strong>10 USDT</strong></p>
+                    <p>Prob. Alta: Pez Común | Baja: Pez Raro</p>
+                </div>
+                <button class="btn-action" style="width: auto; padding: 6px 10px;" onclick="comprarItem('comprar_cana', 'cana_comun', 10)">Comprar</button>
             </div>
 
+            <div class="card-item">
+                <div style="font-size: 35px;">🎣✨</div>
+                <div class="item-info">
+                    <span class="badge raro">RARA</span>
+                    <h4>Caña Rara</h4>
+                    <p>Precio: <strong>40 USDT</strong></p>
+                    <p>Probabilidad: Pez Raro (0% Común)</p>
+                </div>
+                <button class="btn-action" style="width: auto; padding: 6px 10px;" onclick="comprarItem('comprar_cana', 'cana_rara', 40)">Comprar</button>
+            </div>
         </div>
     </div>
 
@@ -198,15 +248,15 @@
             const notif = document.getElementById('notificacion');
             notif.innerText = texto;
             notif.style.display = 'block';
-            setTimeout(() => { notif.style.display = 'none'; }, 3000);
+            setTimeout(() => { notif.style.display = 'none'; }, 3500);
         }
 
-        // Simulación de render de peces
+        // ANIMACIÓN DEL ESTANQUE (CANVAS)
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let peces = [
-            { x: 50, y: 100, vx: 1.5, vy: 0.5, emoji: '🐠', size: 30 },
-            { x: 200, y: 220, vx: -1.2, vy: -0.3, emoji: '🐡', size: 35 }
+            { x: 50, y: 100, vx: 1.2, vy: 0.4, emoji: '🐟', size: 28 }, // Pez Gratis Inicial
+            { x: 180, y: 200, vx: -1.0, vy: -0.3, emoji: '🐠', size: 32 }
         ];
 
         function animar() {
@@ -222,18 +272,23 @@
         }
         animar();
 
+        // ACCIONES
         function alimentarPeces() {
-            mostrarNotificacion("🍞 ¡Peces alimentados! Generando USDT...");
+            mostrarNotificacion("🍞 Enviando orden de alimentacion...");
             if (tg.sendData) {
                 tg.sendData(JSON.stringify({ accion: "alimentar" }));
             }
         }
 
-        function comprarPez(tipo, precio) {
-            mostrarNotificacion(`🛒 Comprando ${tipo}...`);
+        function comprarItem(accion, tipo, precio) {
+            mostrarNotificacion("🛍️ Generando datos de pago BEP-20...");
             if (tg.sendData) {
-                tg.sendData(JSON.stringify({ accion: "comprar_pez", tipo: tipo, precio: precio }));
+                tg.sendData(JSON.stringify({ accion: accion, tipo: tipo, precio: precio }));
             }
+        }
+
+        function solicitarRetiro() {
+            alert("📌 El minimo de retiro es 10 USDT. Recuerda acumularlo alimentando tus peces.");
         }
     </script>
 </body>
