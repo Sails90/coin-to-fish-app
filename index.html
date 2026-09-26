@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Coin to Fish - Mini App</title>
-    <!-- SDK Oficial de Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,106 +14,226 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 20px;
         }
         header {
-            margin-top: 15px;
+            margin: 15px 0 10px 0;
             text-align: center;
         }
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            background: #1b263b;
+            color: #e0e1dd;
+            border: 1px solid #415a77;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            background: #00b4d8;
+            color: #000;
+        }
+        .section { display: none; width: 90%; max-width: 400px; }
+        .section.active { display: flex; flex-direction: column; align-items: center; }
+
         #gameCanvas {
             border: 3px solid #00b4d8;
             border-radius: 15px;
             background: linear-gradient(180deg, #0077b6 0%, #03045e 100%);
             box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         }
-        .controls {
-            margin-bottom: 25px;
-            width: 90%;
-            display: flex;
-            justify-content: center;
-        }
-        .btn-pescar {
+        .btn-action {
             background: linear-gradient(45deg, #ffb703, #fb8500);
             border: none;
             color: #000;
             font-weight: bold;
-            font-size: 18px;
-            padding: 15px 30px;
-            border-radius: 25px;
+            font-size: 16px;
+            padding: 12px 24px;
+            border-radius: 20px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(251, 133, 0, 0.4);
+            margin-top: 15px;
             width: 100%;
-            max-width: 300px;
         }
-        .btn-pescar:active { transform: scale(0.96); }
+        .btn-action:active { transform: scale(0.96); }
+
+        /* Estilos del Marketplace */
+        .market-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .card-pez {
+            background: #1b263b;
+            border: 1px solid #415a77;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .pez-info h4 { margin-bottom: 5px; color: #ffb703; }
+        .pez-info p { font-size: 12px; color: #e0e1dd; }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .comun { background: #6c757d; color: #fff; }
+        .raro { background: #0d6efd; color: #fff; }
+        .epico { background: #6f42c1; color: #fff; }
+        .legendario { background: #ffc107; color: #000; }
+
+        #notificacion {
+            position: fixed;
+            top: 10px;
+            background: rgba(0, 180, 216, 0.9);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
 
+    <div id="notificacion"></div>
+
     <header>
-        <h2>🌊 ESTANQUE ANIMADO 🎣</h2>
-        <p>Toca para lanzar el anzuelo</p>
+        <h2>🌊 COIN TO FISH 🎣</h2>
+        <p style="font-size: 12px; color: #a8dadc;">ROI: 45 Días | 4 Comidas al Día</p>
     </header>
 
-    <!-- Lienzo interactivo del juego -->
-    <canvas id="gameCanvas" width="340" height="380"></canvas>
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="verSeccion('estanque', this)">🐟 Estanque</button>
+        <button class="tab-btn" onclick="verSeccion('market', this)">🛒 Mercado</button>
+    </div>
 
-    <div class="controls">
-        <button class="btn-pescar" onclick="lanzarAnzuelo()">🎣 Lanzar Anzuelo</button>
+    <!-- SECCIÓN ESTANQUE -->
+    <div id="estanque" class="section active">
+        <canvas id="gameCanvas" width="340" height="320"></canvas>
+        <button class="btn-action" onclick="alimentarPeces()">🍞 Alimentar Peces (4/Día)</button>
+    </div>
+
+    <!-- SECCIÓN MARKETPLACE -->
+    <div id="market" class="section">
+        <div class="market-grid">
+            
+            <div class="card-pez">
+                <div style="font-size: 40px;">🐠</div>
+                <div class="pez-info">
+                    <span class="badge comun">COMÚN</span>
+                    <h4>Pez Pezqueñín</h4>
+                    <p>Precio: <strong>10 USDT</strong></p>
+                    <p>Ganancia: <strong>0.083 USDT / Comida</strong></p>
+                    <p>Retorno total (45d): 15 USDT</p>
+                </div>
+                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_comun', 10)">Comprar</button>
+            </div>
+
+            <div class="card-pez">
+                <div style="font-size: 40px;">🐡</div>
+                <div class="pez-info">
+                    <span class="badge raro">RARO</span>
+                    <h4>Pez Globo Dorado</h4>
+                    <p>Precio: <strong>50 USDT</strong></p>
+                    <p>Ganancia: <strong>0.416 USDT / Comida</strong></p>
+                    <p>Retorno total (45d): 75 USDT</p>
+                </div>
+                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_raro', 50)">Comprar</button>
+            </div>
+
+            <div class="card-pez">
+                <div style="font-size: 40px;">🐬</div>
+                <div class="pez-info">
+                    <span class="badge epico">ÉPICO</span>
+                    <h4>Delfín Neón</h4>
+                    <p>Precio: <strong>200 USDT</strong></p>
+                    <p>Ganancia: <strong>1.666 USDT / Comida</strong></p>
+                    <p>Retorno total (45d): 300 USDT</p>
+                </div>
+                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_epico', 200)">Comprar</button>
+            </div>
+
+            <div class="card-pez">
+                <div style="font-size: 40px;">🦈</div>
+                <div class="pez-info">
+                    <span class="badge legendario">LEGENDARIO</span>
+                    <h4>Tiburón Megalodón</h4>
+                    <p>Precio: <strong>500 USDT</strong></p>
+                    <p>Ganancia: <strong>4.166 USDT / Comida</strong></p>
+                    <p>Retorno total (45d): 750 USDT</p>
+                </div>
+                <button class="btn-action" style="width: auto; padding: 8px 12px;" onclick="comprarPez('pez_legendario', 500)">Comprar</button>
+            </div>
+
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Pantalla completa en Telegram
+        tg.expand();
 
+        function verSeccion(id, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function mostrarNotificacion(texto) {
+            const notif = document.getElementById('notificacion');
+            notif.innerText = texto;
+            notif.style.display = 'block';
+            setTimeout(() => { notif.style.display = 'none'; }, 3000);
+        }
+
+        // Simulación de render de peces
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Peces animados
         let peces = [
             { x: 50, y: 100, vx: 1.5, vy: 0.5, emoji: '🐠', size: 30 },
-            { x: 200, y: 220, vx: -1.2, vy: -0.3, emoji: '🐡', size: 35 },
-            { x: 100, y: 300, vx: 2, vy: -0.2, emoji: '🦈', size: 45 }
+            { x: 200, y: 220, vx: -1.2, vy: -0.3, emoji: '🐡', size: 35 }
         ];
 
-        // Bucle de animación del acuario (Render 60FPS)
         function animar() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Dibujar burbujas suaves
-            ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-            ctx.beginPath();
-            ctx.arc(80, (Date.now() / 20) % canvas.height, 4, 0, Math.PI * 2);
-            ctx.arc(220, (Date.now() / 15) % canvas.height, 6, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Mover y renderizar peces
             peces.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-
-                // Rebote en bordes
+                p.x += p.vx; p.y += p.vy;
                 if (p.x < 10 || p.x > canvas.width - 40) p.vx *= -1;
                 if (p.y < 20 || p.y > canvas.height - 40) p.vy *= -1;
-
                 ctx.font = `${p.size}px serif`;
                 ctx.fillText(p.emoji, p.x, p.y);
             });
-
             requestAnimationFrame(animar);
         }
-
         animar();
 
-        function lanzarAnzuelo() {
-            // Envía el evento de vuelta al bot en Python de Telegram
-            tg.sendData(JSON.stringify({
-                accion: "pescar",
-                user_id: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null
-            }));
-            tg.close();
+        function alimentarPeces() {
+            mostrarNotificacion("🍞 ¡Peces alimentados! Generando USDT...");
+            if (tg.sendData) {
+                tg.sendData(JSON.stringify({ accion: "alimentar" }));
+            }
+        }
+
+        function comprarPez(tipo, precio) {
+            mostrarNotificacion(`🛒 Comprando ${tipo}...`);
+            if (tg.sendData) {
+                tg.sendData(JSON.stringify({ accion: "comprar_pez", tipo: tipo, precio: precio }));
+            }
         }
     </script>
 </body>
