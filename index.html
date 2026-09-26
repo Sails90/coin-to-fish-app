@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Coin to Fish - Mini App</title>
+    <!-- SDK Oficial de Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0d1b2a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            margin-top: 15px;
+            text-align: center;
+        }
+        #gameCanvas {
+            border: 3px solid #00b4d8;
+            border-radius: 15px;
+            background: linear-gradient(180deg, #0077b6 0%, #03045e 100%);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+        .controls {
+            margin-bottom: 25px;
+            width: 90%;
+            display: flex;
+            justify-content: center;
+        }
+        .btn-pescar {
+            background: linear-gradient(45deg, #ffb703, #fb8500);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(251, 133, 0, 0.4);
+            width: 100%;
+            max-width: 300px;
+        }
+        .btn-pescar:active { transform: scale(0.96); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>🌊 ESTANQUE ANIMADO 🎣</h2>
+        <p>Toca para lanzar el anzuelo</p>
+    </header>
+
+    <!-- Lienzo interactivo del juego -->
+    <canvas id="gameCanvas" width="340" height="380"></canvas>
+
+    <div class="controls">
+        <button class="btn-pescar" onclick="lanzarAnzuelo()">🎣 Lanzar Anzuelo</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Pantalla completa en Telegram
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Peces animados
+        let peces = [
+            { x: 50, y: 100, vx: 1.5, vy: 0.5, emoji: '🐠', size: 30 },
+            { x: 200, y: 220, vx: -1.2, vy: -0.3, emoji: '🐡', size: 35 },
+            { x: 100, y: 300, vx: 2, vy: -0.2, emoji: '🦈', size: 45 }
+        ];
+
+        // Bucle de animación del acuario (Render 60FPS)
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar burbujas suaves
+            ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.beginPath();
+            ctx.arc(80, (Date.now() / 20) % canvas.height, 4, 0, Math.PI * 2);
+            ctx.arc(220, (Date.now() / 15) % canvas.height, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mover y renderizar peces
+            peces.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Rebote en bordes
+                if (p.x < 10 || p.x > canvas.width - 40) p.vx *= -1;
+                if (p.y < 20 || p.y > canvas.height - 40) p.vy *= -1;
+
+                ctx.font = `${p.size}px serif`;
+                ctx.fillText(p.emoji, p.x, p.y);
+            });
+
+            requestAnimationFrame(animar);
+        }
+
+        animar();
+
+        function lanzarAnzuelo() {
+            // Envía el evento de vuelta al bot en Python de Telegram
+            tg.sendData(JSON.stringify({
+                accion: "pescar",
+                user_id: tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null
+            }));
+            tg.close();
+        }
+    </script>
+</body>
+</html>
